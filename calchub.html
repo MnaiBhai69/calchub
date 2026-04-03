@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CalcHub – Every Calculator You Need</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --green: #1D9E75;
+    --green-light: #E1F5EE;
+    --green-dark: #0F6E56;
+    --bg: #FAFAF9;
+    --surface: #FFFFFF;
+    --border: rgba(0,0,0,0.09);
+    --border-md: rgba(0,0,0,0.14);
+    --text: #1a1a18;
+    --muted: #6b6b67;
+    --hint: #9b9b97;
+    --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 12px rgba(0,0,0,0.04);
+    --shadow-md: 0 2px 8px rgba(0,0,0,0.1), 0 8px 24px rgba(0,0,0,0.06);
+    --radius: 14px;
+    --radius-sm: 9px;
+  }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(250,250,249,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 1.5rem;
+    height: 58px;
+  }
+  .logo {
+    font-size: 20px; font-weight: 800; letter-spacing: -0.8px;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .logo span { color: var(--green); }
+  .nav-tagline { font-size: 12px; color: var(--muted); font-weight: 400; }
+
+  /* HERO */
+  .hero {
+    text-align: center;
+    padding: 4rem 1.5rem 2.5rem;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--green-light); color: var(--green-dark);
+    font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+    padding: 4px 12px; border-radius: 99px;
+    margin-bottom: 1.2rem;
+    text-transform: uppercase;
+  }
+  .hero h1 {
+    font-size: clamp(32px, 6vw, 56px);
+    font-weight: 800; letter-spacing: -2px; line-height: 1.08;
+    margin-bottom: 1rem;
+  }
+  .hero h1 em { font-style: normal; color: var(--green); }
+  .hero p {
+    font-size: 15px; color: var(--muted);
+    max-width: 380px; margin: 0 auto 2rem;
+    font-weight: 400; line-height: 1.7;
+  }
+
+  /* SEARCH */
+  .search-wrap { max-width: 400px; margin: 0 auto 2rem; position: relative; }
+  .search-wrap svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+  #searchInput {
+    width: 100%; padding: 12px 14px 12px 40px;
+    background: var(--surface); border: 1px solid var(--border-md);
+    border-radius: 99px; font-family: 'Syne', sans-serif;
+    font-size: 14px; color: var(--text); outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  #searchInput:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(29,158,117,0.12); }
+  #searchInput::placeholder { color: var(--hint); }
+
+  /* TABS */
+  .tabs {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    justify-content: center;
+    padding: 0 1.5rem 2rem;
+    max-width: 700px; margin: 0 auto;
+  }
+  .tab {
+    font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 500;
+    padding: 7px 18px; border-radius: 99px; cursor: pointer;
+    border: 1px solid var(--border-md);
+    background: var(--surface); color: var(--muted);
+    transition: all 0.15s; user-select: none;
+  }
+  .tab:hover { border-color: var(--green); color: var(--green); }
+  .tab.active { background: var(--green); color: #fff; border-color: var(--green); }
+
+  /* GRID */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 12px;
+    padding: 0 1.5rem 4rem;
+    max-width: 1100px; margin: 0 auto;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.2rem;
+    cursor: pointer;
+    transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--card-accent, var(--green));
+    opacity: 0; transition: opacity 0.18s;
+  }
+  .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--border-md); }
+  .card:hover::before { opacity: 1; }
+
+  .card-icon {
+    width: 42px; height: 42px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; margin-bottom: 12px;
+    flex-shrink: 0;
+  }
+  .card-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .card-desc { font-size: 12px; color: var(--muted); line-height: 1.45; font-weight: 400; }
+  .card-badge {
+    display: inline-block; font-size: 9px; font-weight: 700;
+    padding: 2px 8px; border-radius: 99px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .badge-new { background: var(--green-light); color: var(--green-dark); }
+  .badge-bill { background: #FAEEDA; color: #854F0B; }
+  .badge-ext { background: #E6F1FB; color: #185FA5; }
+
+  /* MODAL */
+  .overlay {
+    display: none; position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(4px);
+    align-items: center; justify-content: center;
+    padding: 1rem;
+  }
+  .overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 1.75rem;
+    width: min(420px, 100%);
+    max-height: 90vh; overflow-y: auto;
+    box-shadow: var(--shadow-md);
+    animation: slideUp 0.2s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .modal-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 1.5rem;
+  }
+  .modal-title { font-size: 18px; font-weight: 700; }
+  .modal-sub { font-size: 12px; color: var(--muted); margin-top: 2px; font-weight: 400; }
+  .close-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--muted); font-size: 22px; line-height: 1;
+    padding: 0 0 0 1rem; flex-shrink: 0;
+    transition: color 0.15s;
+  }
+  .close-btn:hover { color: var(--text); }
+
+  /* FIELDS */
+  .field { margin-bottom: 1rem; }
+  .field label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 5px; font-weight: 500; }
+  .field input, .field select {
+    width: 100%;
+    border: 1px solid var(--border-md);
+    border-radius: var(--radius-sm); padding: 10px 12px;
+    font-family: 'DM Mono', monospace; font-size: 13px;
+    background: var(--bg); color: var(--text);
+    outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .field input:focus, .field select:focus {
+    border-color: var(--green); box-shadow: 0 0 0 3px rgba(29,158,117,0.12);
+  }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .calc-btn {
+    width: 100%; padding: 12px;
+    background: var(--green); color: #fff; border: none;
+    border-radius: var(--radius-sm);
+    font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: background 0.15s, transform 0.1s;
+    margin-top: 0.5rem;
+  }
+  .calc-btn:hover { background: var(--green-dark); }
+  .calc-btn:active { transform: scale(0.98); }
+
+  .result-box {
+    display: none; margin-top: 1.2rem;
+    background: var(--green-light);
+    border: 1px solid rgba(29,158,117,0.2);
+    border-radius: var(--radius-sm);
+    padding: 1.1rem 1.2rem;
+  }
+  .result-box.show { display: block; }
+  .result-label { font-size: 11px; color: var(--green-dark); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .result-value { font-size: 26px; font-weight: 700; font-family: 'DM Mono', monospace; color: var(--green); line-height: 1.2; }
+  .result-sub { font-size: 12px; color: var(--green-dark); margin-top: 6px; font-weight: 400; line-height: 1.5; }
+
+  /* BILL CHECKER special */
+  .bill-info {
+    background: #FAEEDA; border: 1px solid #F5C4B3;
+    border-radius: var(--radius-sm); padding: 1rem;
+    margin-bottom: 1rem; font-size: 13px; line-height: 1.6; font-weight: 400;
+  }
+  .bill-info b { color: #633806; }
+  .bill-link-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; padding: 12px;
+    background: var(--text); color: #fff; border: none;
+    border-radius: var(--radius-sm);
+    font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: background 0.15s;
+    text-decoration: none; margin-top: 8px;
+  }
+  .bill-link-btn:hover { background: #333; }
+  .bill-link-btn.alt {
+    background: var(--green); margin-top: 0;
+  }
+  .bill-link-btn.alt:hover { background: var(--green-dark); }
+
+  /* EMPTY */
+  .empty { display: none; text-align: center; padding: 4rem 1rem; color: var(--muted); }
+  .empty svg { margin-bottom: 1rem; opacity: 0.4; }
+  .empty p { font-size: 15px; }
+
+  /* FOOTER */
+  footer {
+    text-align: center; padding: 2rem;
+    font-size: 12px; color: var(--hint);
+    border-top: 1px solid var(--border);
+    font-weight: 400;
+  }
+  footer a { color: var(--green); text-decoration: none; }
+
+  @media (max-width: 480px) {
+    .hero h1 { font-size: 32px; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+    .modal { padding: 1.25rem; }
+    .field-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="#">Calc<span>Hub</span></a>
+  <span class="nav-tagline">Faisalabad, Pakistan</span>
+</nav>
+
+<div class="hero">
+  <div class="hero-badge">
+    <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="#1D9E75"/></svg>
+    Free · No Login · Always Online
+  </div>
+  <h1>Every calculator<br>you'll ever <em>need</em></h1>
+  <p>Fast, free tools for everyday calculations — plus FESCO electricity &amp; SNGPL gas bill checking for Faisalabad.</p>
+
+  <div class="search-wrap">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <circle cx="7" cy="7" r="5" stroke="#9b9b97" stroke-width="1.5"/>
+      <path d="M11 11l3 3" stroke="#9b9b97" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    <input type="text" id="searchInput" placeholder="Search calculators…" oninput="filterCalcs()" autocomplete="off">
+  </div>
+</div>
+
+<div class="tabs" id="tabsRow">
+  <div class="tab active" onclick="filterByCategory('all',this)">All</div>
+  <div class="tab" onclick="filterByCategory('bill',this)">Bill Checkers</div>
+  <div class="tab" onclick="filterByCategory('health',this)">Health</div>
+  <div class="tab" onclick="filterByCategory('finance',this)">Finance</div>
+  <div class="tab" onclick="filterByCategory('math',this)">Math</div>
+  <div class="tab" onclick="filterByCategory('time',this)">Time & Date</div>
+  <div class="tab" onclick="filterByCategory('everyday',this)">Everyday</div>
+</div>
+
+<div class="grid" id="grid"></div>
+<div class="empty" id="empty">
+  <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="20" stroke="#9b9b97" stroke-width="2"/><path d="M16 24h16M24 16v16" stroke="#9b9b97" stroke-width="2" stroke-linecap="round"/></svg>
+  <p>No calculators found. Try a different search.</p>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="handleOverlayClick(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modalTitle"></div>
+        <div class="modal-sub" id="modalSub"></div>
+      </div>
+      <button class="close-btn" onclick="closeModal()">×</button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<footer>
+  Made for Faisalabad &amp; Pakistan · FESCO helpline: <a href="tel:080066554">0800-66554</a> · SNGPL helpline: <a href="tel:1199">1199</a>
+</footer>
+
+<script>
+const CALCS = [
+  // --- BILL CHECKERS ---
+  {
+    id: 'fesco', name: 'FESCO Electricity Bill', desc: 'Check FESCO e-bill by 14-digit reference number', icon: '⚡', color: '#FAEEDA', accent: '#EF9F27', cat: 'bill', badge: 'bill', type: 'bill',
+    billInfo: {
+      intro: 'Enter your <b>14-digit Reference Number</b> (or 10-digit Consumer ID) from any old FESCO bill. You will be redirected to the official FESCO bill portal.',
+      label1: 'Reference Number (14 digits)', placeholder1: '01234567890123', maxLen: 14, minLen: 10,
+      label2: null,
+      btnText: 'Check FESCO Bill →',
+      url: (ref) => `https://fscobill.net.pk/?ref=${encodeURIComponent(ref)}`,
+      altUrl: 'https://fscobill.net.pk/',
+      hint: 'Find your reference number at the top-left of your paper bill. FESCO helpline: 0800-66554'
+    }
+  },
+  {
+    id: 'sngpl', name: 'SNGPL Gas Bill', desc: 'Check Sui gas bill by consumer number', icon: '🔥', color: '#E1F5EE', accent: '#1D9E75', cat: 'bill', badge: 'bill', type: 'bill',
+    billInfo: {
+      intro: 'Enter your <b>11-digit Consumer Number</b> from your SNGPL gas bill. You will be redirected to the official SNGPL bill portal.',
+      label1: 'Consumer Number (11 digits)', placeholder1: '12345678901', maxLen: 11, minLen: 11,
+      label2: null,
+      btnText: 'Check SNGPL Gas Bill →',
+      url: (ref) => `https://www.sngpl.com.pk/wsc.jsp?rid=${encodeURIComponent(ref)}`,
+      altUrl: 'https://www.sngpl.com.pk/',
+      hint: 'Find your consumer number at the top of any previous gas bill. SNGPL helpline: 1199'
+    }
+  },
+  // --- HEALTH ---
+  {
+    id: 'age', name: 'Age Calculator', desc: 'Exact age in years, months & days', icon: '🎂', color: '#FAECE7', accent: '#D85A30', cat: 'time',
+    fields: [{id:'dob', label:'Date of birth', type:'date'}],
+    calc: (f) => {
+      const d = new Date(f.dob), now = new Date();
+      let y = now.getFullYear() - d.getFullYear();
+      let mo = now.getMonth() - d.getMonth();
+      let days = now.getDate() - d.getDate();
+      if(days < 0){ mo--; days += 30; }
+      if(mo < 0){ y--; mo += 12; }
+      const totalDays = Math.floor((now - d)/(1000*60*60*24));
+      return { main: `${y} years old`, sub: `${mo} months, ${days} days · Total: ${totalDays.toLocaleString()} days lived` };
+    }
+  },
+  {
+    id: 'bmi', name: 'BMI Calculator', desc: 'Body mass index & weight category', icon: '⚖️', color: '#E1F5EE', accent: '#1D9E75', cat: 'health',
+    fields: [{id:'weight', label:'Weight (kg)', type:'number', placeholder:'70'}, {id:'height', label:'Height (cm)', type:'number', placeholder:'170'}],
+    calc: (f) => {
+      const bmi = f.weight / ((f.height/100)**2);
+      const cat = bmi<18.5?'Underweight':bmi<25?'Normal weight ✓':bmi<30?'Overweight':'Obese';
+      const ideal = [18.5*(f.height/100)**2, 24.9*(f.height/100)**2].map(x=>x.toFixed(1));
+      return { main: `${bmi.toFixed(1)} BMI`, sub: `Category: ${cat} · Ideal weight: ${ideal[0]}–${ideal[1]} kg` };
+    }
+  },
+  {
+    id: 'calorie', name: 'Calorie Calculator', desc: 'Daily calorie needs (BMR × activity)', icon: '🔥', color: '#FCEBEB', accent: '#E24B4A', cat: 'health',
+    fields: [
+      {id:'weight2', label:'Weight (kg)', type:'number', placeholder:'70'},
+      {id:'height2', label:'Height (cm)', type:'number', placeholder:'170'},
+      {id:'age2', label:'Age', type:'number', placeholder:'25'},
+      {id:'gender', label:'Gender', type:'select', options:['Male','Female']},
+      {id:'activity', label:'Activity level', type:'select', options:['Sedentary (office job)','Lightly active','Moderately active','Very active','Extremely active']}
+    ],
+    calc: (f) => {
+      const bmr = f.gender==='Male' ? 88.36+13.4*f.weight2+4.8*f.height2-5.7*f.age2 : 447.6+9.2*f.weight2+3.1*f.height2-4.3*f.age2;
+      const mults = {'Sedentary (office job)':1.2,'Lightly active':1.375,'Moderately active':1.55,'Very active':1.725,'Extremely active':1.9};
+      const tdee = bmr * mults[f.activity];
+      return { main: `${Math.round(tdee)} kcal/day`, sub: `BMR: ${Math.round(bmr)} kcal · To lose weight: ${Math.round(tdee-500)} kcal · To gain: ${Math.round(tdee+300)} kcal` };
+    }
+  },
+  {
+    id: 'sleep', name: 'Sleep Calculator', desc: 'Best wake-up times based on bedtime', icon: '😴', color: '#EEEDFE', accent: '#7F77DD', cat: 'health',
+    fields: [{id:'sleeptime', label:'Bedtime', type:'time'}],
+    calc: (f) => {
+      const [h,m] = f.sleeptime.split(':').map(Number);
+      const fmt = (mins) => {
+        let wh = Math.floor((h*60+m+mins)/60)%24;
+        let wm = (h*60+m+mins)%60;
+        return `${String(wh).padStart(2,'0')}:${String(wm).padStart(2,'0')}`;
+      };
+      const times = [270,360,450,540].map(fmt);
+      return { main: times[1], sub: `Best wake times (4.5–9h sleep cycles):\n${times.join(' · ')}` };
+    }
+  },
+  // --- FINANCE ---
+  {
+    id: 'loan', name: 'Monthly Loan EMI', desc: 'Monthly payment, interest & total cost', icon: '🏦', color: '#E6F1FB', accent: '#378ADD', cat: 'finance',
+    fields: [
+      {id:'principal', label:'Loan amount (PKR)', type:'number', placeholder:'500000'},
+      {id:'rate', label:'Annual interest rate (%)', type:'number', placeholder:'12'},
+      {id:'tenure', label:'Loan period (months)', type:'number', placeholder:'24'}
+    ],
+    calc: (f) => {
+      const r = f.rate/100/12;
+      if(r===0){ const emi=f.principal/f.tenure; return {main:`PKR ${Math.round(emi).toLocaleString()}/month`, sub:`Total payable: PKR ${Math.round(f.principal).toLocaleString()} (0% interest)`}; }
+      const emi = f.principal * r * Math.pow(1+r,f.tenure)/(Math.pow(1+r,f.tenure)-1);
+      const total = emi*f.tenure;
+      const interest = total - f.principal;
+      return { main: `PKR ${Math.round(emi).toLocaleString()}/month`, sub: `Total payable: PKR ${Math.round(total).toLocaleString()} · Total interest: PKR ${Math.round(interest).toLocaleString()}` };
+    }
+  },
+  {
+    id: 'currency', name: 'Currency Converter', desc: 'PKR, USD, EUR, SAR, AED & more', icon: '💱', color: '#EEEDFE', accent: '#7F77DD', cat: 'finance',
+    fields: [
+      {id:'amount', label:'Amount', type:'number', placeholder:'1000'},
+      {id:'from', label:'From currency', type:'select', options:['PKR','USD','EUR','GBP','SAR','AED','CNY','INR']},
+      {id:'to', label:'To currency', type:'select', options:['USD','PKR','EUR','GBP','SAR','AED','CNY','INR']}
+    ],
+    calc: (f) => {
+      const rates = {PKR:1,USD:278,EUR:302,GBP:354,SAR:74.1,AED:75.7,CNY:38.5,INR:3.34};
+      const result = f.amount * rates[f.from] / rates[f.to];
+      const rate = (rates[f.from]/rates[f.to]).toFixed(4);
+      return { main: `${result.toFixed(2)} ${f.to}`, sub: `Rate: 1 ${f.from} = ${rate} ${f.to} · (Approximate rates)` };
+    }
+  },
+  {
+    id: 'zakat', name: 'Zakat Calculator', desc: 'Calculate your annual Zakat (2.5%)', icon: '🌙', color: '#FAEEDA', accent: '#BA7517', cat: 'finance', badge: 'new',
+    fields: [
+      {id:'cash', label:'Cash & bank savings (PKR)', type:'number', placeholder:'200000'},
+      {id:'gold', label:'Gold value (PKR)', type:'number', placeholder:'50000'},
+      {id:'invest', label:'Investments & stocks (PKR)', type:'number', placeholder:'0'},
+      {id:'debts', label:'Debts owed to you (PKR)', type:'number', placeholder:'0'}
+    ],
+    calc: (f) => {
+      const nisab = 87.48 * 7000; // Silver nisab in PKR approx
+      const total = (f.cash||0)+(f.gold||0)+(f.invest||0)+(f.debts||0);
+      if(total < nisab) return { main: 'Not liable', sub: `Total assets: PKR ${total.toLocaleString()} is below Nisab threshold (PKR ${Math.round(nisab).toLocaleString()})` };
+      const zakat = total * 0.025;
+      return { main: `PKR ${Math.round(zakat).toLocaleString()}`, sub: `2.5% of PKR ${total.toLocaleString()} total assets · Monthly: PKR ${Math.round(zakat/12).toLocaleString()}` };
+    }
+  },
+  // --- MATH ---
+  {
+    id: 'percent', name: 'Percentage Calculator', desc: 'X% of Y — what % is X of Y', icon: '%', color: '#FAEEDA', accent: '#BA7517', cat: 'math',
+    fields: [
+      {id:'val', label:'Value (X)', type:'number', placeholder:'80'},
+      {id:'total', label:'Total / base (Y)', type:'number', placeholder:'200'}
+    ],
+    calc: (f) => {
+      const pct = (f.val/f.total*100).toFixed(2);
+      const ofY = (f.total*f.val/100).toFixed(2);
+      return { main: `${pct}%`, sub: `${f.val} is ${pct}% of ${f.total} · ${f.val}% of ${f.total} = ${Number(ofY).toLocaleString()}` };
+    }
+  },
+  {
+    id: 'discount', name: 'Discount Calculator', desc: 'Final price after % off & savings', icon: '🏷️', color: '#FBEAF0', accent: '#D4537E', cat: 'math',
+    fields: [
+      {id:'price', label:'Original price (PKR)', type:'number', placeholder:'2000'},
+      {id:'disc', label:'Discount (%)', type:'number', placeholder:'20'}
+    ],
+    calc: (f) => {
+      const saving = f.price*f.disc/100;
+      const final = f.price - saving;
+      return { main: `PKR ${final.toLocaleString()}`, sub: `You save: PKR ${saving.toLocaleString()} (${f.disc}% off)` };
+    }
+  },
+  // --- TIME ---
+  {
+    id: 'datediff', name: 'Date Difference', desc: 'Days, weeks & months between dates', icon: '📅', color: '#E1F5EE', accent: '#1D9E75', cat: 'time',
+    fields: [
+      {id:'date1', label:'Start date', type:'date'},
+      {id:'date2', label:'End date', type:'date'}
+    ],
+    calc: (f) => {
+      const d1 = new Date(f.date1), d2 = new Date(f.date2);
+      const diff = Math.abs(d2-d1);
+      const days = Math.floor(diff/86400000);
+      const weeks = Math.floor(days/7);
+      const months = Math.floor(days/30.44);
+      return { main: `${days.toLocaleString()} days`, sub: `≈ ${weeks} weeks · ≈ ${months} months · ≈ ${(days/365.25).toFixed(1)} years` };
+    }
+  },
+  // --- EVERYDAY ---
+  {
+    id: 'gpa', name: 'GPA Calculator', desc: 'CGPA from marks (Pakistani HEC scale)', icon: '📚', color: '#FAEEDA', accent: '#BA7517', cat: 'everyday', badge: 'new',
+    fields: [
+      {id:'marks', label:'Marks obtained (%)', type:'number', placeholder:'85'},
+      {id:'scale', label:'GPA scale', type:'select', options:['4.0 scale','5.0 scale']}
+    ],
+    calc: (f) => {
+      const m = f.marks;
+      let gpa4 = m>=90?4.0:m>=85?3.7:m>=80?3.3:m>=75?3.0:m>=70?2.7:m>=65?2.3:m>=60?2.0:m>=55?1.7:m>=50?1.3:m>=45?1.0:0;
+      let grade = m>=90?'A+':m>=85?'A':m>=80?'A-':m>=75?'B+':m>=70?'B':m>=65?'B-':m>=60?'C+':m>=55?'C':m>=50?'C-':m>=45?'D':'F';
+      const gpa5 = (gpa4/4*5).toFixed(2);
+      const main = f.scale==='4.0 scale' ? `${gpa4.toFixed(2)} / 4.0` : `${gpa5} / 5.0`;
+      return { main, sub: `Grade: ${grade} · Marks: ${m}% · HEC Pakistan standard` };
+    }
+  },
+  {
+    id: 'speed', name: 'Speed Calculator', desc: 'Speed, distance or time solver', icon: '🚗', color: '#E6F1FB', accent: '#378ADD', cat: 'everyday',
+    fields: [
+      {id:'dist', label:'Distance (km)', type:'number', placeholder:'120'},
+      {id:'hours', label:'Time (hours)', type:'number', placeholder:'2'},
+      {id:'mins', label:'Time (additional minutes)', type:'number', placeholder:'0'}
+    ],
+    calc: (f) => {
+      const totalHrs = f.hours + (f.mins||0)/60;
+      const spd = f.dist/totalHrs;
+      const timeForSpd = `${Math.floor(totalHrs)}h ${Math.round((totalHrs%1)*60)}m`;
+      return { main: `${spd.toFixed(1)} km/h`, sub: `Distance: ${f.dist} km · Time: ${timeForSpd} · Speed: ${(spd/1.60934).toFixed(1)} mph` };
+    }
+  },
+  {
+    id: 'fuel', name: 'Fuel Cost Calculator', desc: 'Trip cost based on fuel price & mileage', icon: '⛽', color: '#FCEBEB', accent: '#E24B4A', cat: 'everyday', badge: 'new',
+    fields: [
+      {id:'fdist', label:'Distance (km)', type:'number', placeholder:'200'},
+      {id:'mileage', label:'Car mileage (km/litre)', type:'number', placeholder:'12'},
+      {id:'fuelPrice', label:'Petrol price (PKR/litre)', type:'number', placeholder:'290'}
+    ],
+    calc: (f) => {
+      const litres = f.fdist/f.mileage;
+      const cost = litres*f.fuelPrice;
+      return { main: `PKR ${Math.round(cost).toLocaleString()}`, sub: `Fuel needed: ${litres.toFixed(2)} litres · Per km: PKR ${(cost/f.fdist).toFixed(2)}` };
+    }
+  },
+];
+
+let activeCategory = 'all';
+
+function renderGrid(list) {
+  const grid = document.getElementById('grid');
+  const empty = document.getElementById('empty');
+  if(!list.length){
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  grid.innerHTML = list.map(c => `
+    <div class="card" style="--card-accent:${c.accent||'#1D9E75'}" onclick="openCalc('${c.id}')">
+      ${c.badge==='new'?`<div class="card-badge badge-new">New</div><br>`:''}
+      ${c.badge==='bill'?`<div class="card-badge badge-bill">Bill Checker</div><br>`:''}
+      <div class="card-icon" style="background:${c.color}">${c.icon}</div>
+      <div class="card-name">${c.name}</div>
+      <div class="card-desc">${c.desc}</div>
+    </div>
+  `).join('');
+}
+
+function filterCalcs() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const list = CALCS.filter(c =>
+    (activeCategory==='all'||c.cat===activeCategory) &&
+    (c.name.toLowerCase().includes(q)||c.desc.toLowerCase().includes(q))
+  );
+  renderGrid(list);
+}
+
+function filterByCategory(cat, el) {
+  activeCategory = cat;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  filterCalcs();
+}
+
+function openCalc(id) {
+  const c = CALCS.find(x=>x.id===id);
+  document.getElementById('modalTitle').textContent = c.name;
+  document.getElementById('modalSub').textContent = c.desc;
+  document.getElementById('modalBody').innerHTML = c.type==='bill' ? buildBillUI(c) : buildCalcForm(c);
+  document.getElementById('overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function buildBillUI(c) {
+  const b = c.billInfo;
+  return `
+    <div class="bill-info">${b.intro}<br><br>
+      <b>How to find it:</b> ${b.hint}
+    </div>
+    <div class="field">
+      <label>${b.label1}</label>
+      <input type="text" inputmode="numeric" id="billRef" placeholder="${b.placeholder1}" maxlength="${b.maxLen}" 
+        onkeyup="this.value=this.value.replace(/\D/g,'')" style="letter-spacing:2px; font-size:16px">
+    </div>
+    <a class="bill-link-btn alt" onclick="openBill('${c.id}')">${b.btnText}</a>
+    <a class="bill-link-btn" href="${c.billInfo.altUrl}" target="_blank">Open Official Website Directly ↗</a>
+    <div style="margin-top:1rem; font-size:11px; color:var(--muted); line-height:1.6; font-weight:400;">
+      ℹ️ You will be redirected to the official government bill portal. CalcHub does not store your reference number.
+    </div>
+  `;
+}
+
+function openBill(id) {
+  const c = CALCS.find(x=>x.id===id);
+  const ref = document.getElementById('billRef').value.trim();
+  const {minLen, maxLen, altUrl, url} = c.billInfo;
+  if(ref.length < minLen) {
+    alert(`Please enter a valid ${minLen}-digit number.`);
+    return;
+  }
+  window.open(url(ref), '_blank');
+}
+
+function buildCalcForm(c) {
+  const fields = c.fields.map(f => {
+    if(f.type==='select') return `
+      <div class="field">
+        <label>${f.label}</label>
+        <select id="f_${f.id}">${f.options.map(o=>`<option>${o}</option>`).join('')}</select>
+      </div>`;
+    return `
+      <div class="field">
+        <label>${f.label}</label>
+        <input type="${f.type}" id="f_${f.id}" placeholder="${f.placeholder||''}"
+          ${f.type==='date'?'max="'+new Date().toISOString().split('T')[0]+'"':''}>
+      </div>`;
+  }).join('');
+  return `${fields}
+    <button class="calc-btn" onclick="runCalc('${c.id}')">Calculate</button>
+    <div class="result-box" id="resultBox">
+      <div class="result-label">Result</div>
+      <div class="result-value" id="resultVal"></div>
+      <div class="result-sub" id="resultSub"></div>
+    </div>`;
+}
+
+function runCalc(id) {
+  const c = CALCS.find(x=>x.id===id);
+  const vals = {};
+  let valid = true;
+  c.fields.forEach(f => {
+    const el = document.getElementById('f_'+f.id);
+    if(!el) return;
+    if(f.type==='select') vals[f.id] = el.value;
+    else if(f.type==='time') vals[f.id] = el.value||'22:00';
+    else if(f.type==='date') {
+      if(!el.value){ valid=false; } else vals[f.id] = el.value;
+    } else {
+      vals[f.id] = parseFloat(el.value);
+      if(el.value!=='' && el.value!==undefined && isNaN(vals[f.id])) valid=false;
+      if(el.value===''||el.value===undefined) {
+        if(!f.placeholder || f.placeholder==='0') vals[f.id]=0;
+        // optional fields default to 0
+      }
+    }
+  });
+  if(!valid){ alert('Please fill in all required fields.'); return; }
+  try {
+    const r = c.calc(vals);
+    document.getElementById('resultVal').textContent = r.main;
+    document.getElementById('resultSub').textContent = r.sub||'';
+    document.getElementById('resultBox').classList.add('show');
+  } catch(e) {
+    alert('Calculation error. Please check your inputs.');
+  }
+}
+
+function closeModal() {
+  document.getElementById('overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function handleOverlayClick(e) {
+  if(e.target===document.getElementById('overlay')) closeModal();
+}
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+
+renderGrid(CALCS);
+</script>
+</body>
+</html>
